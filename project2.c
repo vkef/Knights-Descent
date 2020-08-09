@@ -1,53 +1,56 @@
 #include <stdio.h>  // defines scanf() and printf()
 #include <math.h>   //has math functions; exp(x,y)
 #include <stdlib.h> //defines rand()
-#include <string.h> //
-#include <time.h>   //defines time(
+#include <string.h> //define array characters
+#include <time.h>   //defines time()
 
-int numberOfLions(int level, int rows, int cols);
+int nenemies(int level, int rows, int cols);
+int nblocks(int level, int rows, int cols);
 int freeSpot(int i, int j, char **table);
 void printTable(char **tab, int rows, int cols);
 int move(char *m, int rows, int cols);
 
 char **table;
-char **table2;
-int tarzanPos[2] = {0, 0};
-int foundJ = 0;
-int life = 2;
+int knightPos[2] = {0, 0};
+int e, money, turn = 1, c = 0, rcase;
 
 int main()
 {
     char *moves;
     char name[50];
-    int rows = 10, cols = 10, i, j, k, lions;
+    int rows = 10, cols = 10, i, j, k, f;
     int level;
     srand(time(NULL));
+    printf("\n");
+    printf("WELCOME TO KNIGHTS DECENT!\n");
+    printf("***************************\n");
+    printf("PRESS ANY KEY TO CONTINUE...");
+
+    getchar();
 
     do
     {
-        printf("Height:\n");
+        printf("Height(5-20):");
         scanf("%d", &rows);
-    } while (rows < 8 || rows > 30);
+    } while (rows < 5 || rows > 20);
 
     do
     {
-        printf("Length:\n");
+        printf("Length(5-20):");
         scanf("%d", &cols);
-    } while (cols < 8 || cols > 30);
+    } while (cols < 5 || cols > 20);
 
     do
     {
-        printf("Level:\n");
+        printf("Level(1-3):");
         scanf("%d", &level);
-    } while (level < 1 || level > 4);
+    } while (level < 1 || level > 3);
 
     //Dynamic memory allocation for tables
     table = (char **)malloc(rows * sizeof(char *));
-    table2 = (char **)malloc(rows * sizeof(char *));
     for (i = 0; i < cols; i++)
     {
         table[i] = (char *)malloc(cols * sizeof(char *));
-        table2[i] = (char *)malloc(cols * sizeof(char *));
     }
 
     //Initializing array
@@ -55,28 +58,73 @@ int main()
     {
         for (j = 0; j < cols; j++)
         {
-            table[i][j] = '#';
-            table2[i][j] = '.';
+            table[i][j] = '.';
         }
     }
-    //Placing T in a random spot
-    lions = numberOfLions(level, rows, cols);
+
+    //Placing knight in a random free spot
     i = rand() % rows;
     j = rand() % cols;
-    table[i][j] = 'T';
-    tarzanPos[0] = i;
-    tarzanPos[1] = j;
-
-    //Placing J in a random spot
-    do
+    table[i][j] = '$';
+    knightPos[0] = i;
+    knightPos[1] = j;
+    rcase = 3;
+    //Placing enemies in random free spot
+    switch (rcase)
     {
-        i = rand() % rows;
-        j = rand() % cols;
-    } while ((freeSpot(i, j, table)) == 0);
-    table[i][j] = 'J';
+    case 1: // triangle
 
-    //Placing enemies in a random spot
-    for (k = 0; k < numberOfLions(level, rows, cols); k++)
+        for (i = 1; i <= nenemies(level, rows, cols); ++i)
+        {
+            for (j = 1; j <= i; ++j)
+            {
+                if (c != nenemies(level, rows, cols))
+                {
+                    e = (rand() % 3) + 1;
+                    table[i][j] = e;
+                    e = 0;
+                    c = c + 1;
+                }
+            }
+        }
+        break;
+    case 2: // formation
+
+        for (i = 0; i < nenemies(level, rows, cols); i++)
+        {
+            for (j = 0; j < nenemies(level, rows, cols) / 2; j++)
+            {
+                if (c != nenemies(level, rows, cols))
+                {
+                    e = (rand() % 3) + 1;
+                    table[i][j] = e;
+                    e = 0;
+                    c = c + 1;
+                }
+            }
+        }
+        break;
+
+    case 3: //invert triangle
+
+        for (i = nenemies(level, rows, cols); i >= 1; i--)
+        {
+            for (j = 1; j <= i; j++)
+            {
+                if (c != nenemies(level, rows, cols))
+                {
+                    e = (rand() % 3) + 1;
+                    table[i][j] = e;
+                    e = 0;
+                    c = c + 1;
+                }
+            }
+        }
+        break;
+    } //end of switch
+
+    //Placing blocks in a random free spot
+    for (k = 0; k < nblocks(level, rows, cols); k++)
     {
         do
         {
@@ -84,127 +132,12 @@ int main()
             j = rand() % cols;
 
         } while ((freeSpot(i, j, table)) == 0);
-        table[i][j] = 'L';
-    }
-    //Placing Z in a random place (Z=2*L)
-    for (k = 0; k < (3.0 / 2) * numberOfLions(level, rows, cols); k++)
-    {
-        do
-        {
-            i = rand() % rows;
-            j = rand() % cols;
-
-        } while ((freeSpot(i, j, table)) == 0);
-        table[i][j] = 'Z';
-    }
-
-    //Drawing the Table1
-    printf("    ");
-    for (j = 0; j < cols; j++)
-    {
-        if (j < 9)
-        {
-            printf("%d ", j + 1);
-        }
-        else
-        {
-            printf("%d", j + 1);
-        }
-    }
-    printf("\n");
-    printf("    ");
-    for (j = 0; j < cols; j++)
-    {
-        printf("_ ");
-    }
-    printf("\n");
-    for (i = 0; i < rows; i++)
-    {
-        if (i < 9)
-        {
-            printf("%d | ", i + 1);
-        }
-        else
-        {
-            printf("%d| ", i + 1);
-        }
-        for (j = 0; j < cols; j++)
-        {
-            if (table[i][j] != '#')
-            {
-                printf("%c ", table[i][j]);
-            }
-            else
-            {
-                printf(". ");
-            }
-        }
-        printf("\n");
-    }
-    for (i = 0; i < rows; i++)
-    {
-        for (j = 0; j < cols; j++)
-        {
-            table2[i][j] = table[i][j];
-            table[i][j] = '#';
-        }
-    }
-    for (i = 0; i < rows; i++)
-    {
-        for (j = 0; j < cols; j++)
-        {
-            if (table2[i][j] == '#')
-            {
-                table2[i][j] = '.';
-            }
-        }
+        table[i][j] = '#';
     }
 
     getchar();
-    while (getchar() != '\n')
-        ;
-    {
-        printf("    ");
-        for (j = 0; j < cols; j++)
-        {
-            if (j < 9)
-            {
-                printf("%d ", j + 1);
-            }
-            else
-            {
-                printf("%d", j + 1);
-            }
-        }
-        printf("\n");
-        printf("    ");
-        for (i = 0; i < rows; i++)
-        {
-            if (i < 9)
-            {
-                printf("%d | ", i + 1);
-            }
-            else
-            {
-                printf("%d| ", i + 1);
-            }
-            for (j = 0; j < cols; j++)
-            {
-                if (table2[i][j] == 'T')
-                {
-                    printf("%c ", table2[i][j]);
-                }
-                else
-                {
-                    printf("# ");
-                }
-            }
-        }
-        printf("\n");
-    }
 
-    life = 2;
-    //Caling and Printing 'moves'
+    //Calling and Printing 'moves'
     do
     {
         moves = (char *)malloc(rows * cols * sizeof(char));
@@ -213,44 +146,39 @@ int main()
         {
             break;
         }
-        if (foundJ == 1)
-        {
-            printf("\nYou won! Tarzan found J!\n");
-            break;
-        }
-        for (i = 0; i < rows * cols; i++)
-        {
-            if (moves[i] == 'x' || moves[i] == 'X')
-            {
-                break;
-            }
-        }
+        system("clear");
+        printf("----------MOVE %d----------\n\n", turn);
         printTable(table, rows, cols);
+        printf("\n");
+        printf("Level money spent:%d\n", money);
+        printf("Game money spent: \n");
+        printf("Make your move(s):");
+        turn = turn + 1;
+        money = money + 5;
+
     } while (1);
 
     //Freeing Memory
-    if (foundJ != 1)
-    {
-        printTable(table, rows, cols);
-        printf("\nYou Lost!\n");
-    }
-    for (j = 0; j < cols; j++)
-    {
-        free(table[j]);
-        free(table2[j]);
-    }
-    free(table);
-    free(table2);
-    free(moves);
-} //End of main
 
-// Game level
-int numberOfLions(int level, int rows, int cols)
+    //for (j = 0; j < cols; j++)
+    //{
+    //    free(table[j]);
+    // }
+    //free(table);
+    //free(moves);
+}
+
+//---------------------------------------------------//
+// End of Main
+//---------------------------------------------------//
+
+//Function for generating blocks based in level
+int nblocks(int level, int rows, int cols)
 {
     int cells = rows * cols;
     if (level == 1)
     {
-        return 2 * cells / 100;
+        return 5 * cells / 100;
     }
     else if (level == 2)
     {
@@ -260,16 +188,30 @@ int numberOfLions(int level, int rows, int cols)
     {
         return 10 * cells / 100;
     }
-    else if (level == 4)
+}
+
+//Function for generating enemies based in level
+int nenemies(int level, int rows, int cols)
+{
+    int cells = rows * cols;
+    if (level == 1)
     {
-        return 20 * cells / 100;
+        return 5 * cells / 100;
+    }
+    else if (level == 2)
+    {
+        return 10 * cells / 100;
+    }
+    else if (level == 3)
+    {
+        return 10 * cells / 100;
     }
 }
 
-//Check if place is empty
+//Function for checking if place is empty
 int freeSpot(int i, int j, char **table)
 {
-    if (table[i][j] == '#')
+    if (table[i][j] == '.')
     {
         return 1; //true
     }
@@ -278,190 +220,13 @@ int freeSpot(int i, int j, char **table)
         return 0; //false
     }
 }
-//Reading and generating moves
-int move(char *m, int rows, int cols)
-{
-    int i;
-    for (i = 0; i < rows * cols; i++)
-    {
-        //Upper Table
-        if (m[i] == 'x' || m[i] == 'X')
-        {
-            return 1;
-        }
-        if (m[i] == 'u' || m[i] == 'U')
-        {
-            if (!(tarzanPos[0] == 0))
-            {
-                if (table[tarzanPos[0]][tarzanPos[1]] == '@')
-                {
-                    table[tarzanPos[0]][tarzanPos[1]] == 'Z';
-                    table2[tarzanPos[0]][tarzanPos[1]] == 'Z';
-                }
-                else
-                {
-                    table[tarzanPos[0]][tarzanPos[1]] == '.';
-                    table2[tarzanPos[0]][tarzanPos[1]] == '.';
-                }
-                if (table2[tarzanPos[0] - 1][tarzanPos[1]] == 'L')
-                {
-                    table[tarzanPos[0] - 1][tarzanPos[1]] == 'L';
-                    return 1;
-                }
-                if (table2[tarzanPos[0] - 1][tarzanPos[1]] == 'Z')
-                {
-                    table[tarzanPos[0] - 1][tarzanPos[1]] == '@';
-                    life--;
-                    tarzanPos[0]--;
-                    if (life == 0)
-                    {
-                        return 1;
-                    }
-                    return 0;
-                }
-                if (table2[tarzanPos[0] - 1][tarzanPos[1]] == 'J')
-                {
-                    foundJ = 1;
-                    return 0;
-                }
-                table[tarzanPos[0] - 1][tarzanPos[1]] == 'T';
-                table2[tarzanPos[0] - 1][tarzanPos[1]] == 'T';
-                tarzanPos[0]--;
-            }
-        }
-        //Lower Table
-        if (m[i] == 'd' || m[i] == 'D')
-        {
-            if (!(tarzanPos[0] == rows - 1))
-            {
-                if (table[tarzanPos[0]][tarzanPos[1]] == '@')
-                {
-                    table[tarzanPos[0]][tarzanPos[1]] == 'Z';
-                    table2[tarzanPos[0]][tarzanPos[1]] == 'Z';
-                }
-                else
-                {
-                    table[tarzanPos[0]][tarzanPos[1]] == '.';
-                    table2[tarzanPos[0]][tarzanPos[1]] == '.';
-                }
-                if (table2[tarzanPos[0] + 1][tarzanPos[1]] == 'L')
-                {
-                    table[tarzanPos[0] + 1][tarzanPos[1]] == 'L';
-                    return 1;
-                }
-                if (table2[tarzanPos[0] - 1][tarzanPos[1]] == 'Z')
-                {
-                    table[tarzanPos[0] + 1][tarzanPos[1]] == '@';
-                    life--;
-                    tarzanPos[0]++;
-                    if (life == 0)
-                    {
-                        return 1;
-                    }
-                    return 0;
-                }
-                if (table2[tarzanPos[0] - 1][tarzanPos[1]] == 'J')
-                {
-                    foundJ = 1;
-                    return 0;
-                }
-                table[tarzanPos[0] + 1][tarzanPos[1]] == 'T';
-                table2[tarzanPos[0] + 1][tarzanPos[1]] == 'T';
-                tarzanPos[0]++;
-            }
-        }
-        //Left Table
-        if (m[i] == 'l' || m[i] == 'L')
-        {
-            if (!(tarzanPos[1] == 0))
-            {
-                if (table[tarzanPos[0]][tarzanPos[1]] == '@')
-                {
-                    table[tarzanPos[0]][tarzanPos[1]] == 'Z';
-                    table2[tarzanPos[0]][tarzanPos[1]] == 'Z';
-                }
-                else
-                {
-                    table[tarzanPos[0]][tarzanPos[1]] == '.';
-                    table2[tarzanPos[0]][tarzanPos[1]] == '.';
-                }
-                if (table2[tarzanPos[0]][tarzanPos[1] - 1] == 'L')
-                {
-                    table[tarzanPos[0]][tarzanPos[1] - 1] == 'L';
-                    return 1;
-                }
-                if (table2[tarzanPos[0]][tarzanPos[1] - 1] == 'Z')
-                {
-                    table[tarzanPos[0]][tarzanPos[1] - 1] == '@';
-                    life--;
-                    tarzanPos[1]--;
-                    if (life == 0)
-                    {
-                        return 1;
-                    }
-                    return 0;
-                }
-                if (table2[tarzanPos[0]][tarzanPos[1] - 1] == 'J')
-                {
-                    foundJ = 1;
-                    return 0;
-                }
-                table[tarzanPos[0]][tarzanPos[1] - 1] == 'T';
-                table2[tarzanPos[0]][tarzanPos[1] - 1] == 'T';
-                tarzanPos[1]--;
-            }
-        }
-        //Right Table
-        if (m[i] == 'r' || m[i] == 'R')
-        {
-            if (!(tarzanPos[1] == cols - 1))
-            {
-                if (table[tarzanPos[0]][tarzanPos[1]] == '@')
-                {
-                    table[tarzanPos[0]][tarzanPos[1]] == 'Z';
-                    table2[tarzanPos[0]][tarzanPos[1]] == 'Z';
-                }
-                else
-                {
-                    table[tarzanPos[0]][tarzanPos[1]] == '.';
-                    table2[tarzanPos[0]][tarzanPos[1]] == '.';
-                }
-                if (table2[tarzanPos[0]][tarzanPos[1] + 1] == 'L')
-                {
-                    table[tarzanPos[0]][tarzanPos[1] + 1] == 'L';
-                    return 1;
-                }
-                if (table2[tarzanPos[0]][tarzanPos[1] + 1] == 'Z')
-                {
-                    table[tarzanPos[0]][tarzanPos[1] + 1] == '@';
-                    life--;
-                    tarzanPos[1]++;
-                    if (life == 0)
-                    {
-                        return 1;
-                    }
-                    return 0;
-                }
-                if (table2[tarzanPos[0]][tarzanPos[1] + 1] == 'J')
-                {
-                    foundJ = 1;
-                    return 0;
-                }
-                table[tarzanPos[0]][tarzanPos[1] + 1] == 'T';
-                table2[tarzanPos[0]][tarzanPos[1] + 1] == 'T';
-                tarzanPos[1]++;
-            }
-        }
-    }
-    return 0;
-}
 
-//Generating table
+//Function for printing table
 void printTable(char **tab, int rows, int cols)
 {
     int i, j;
     printf("    ");
-    for (j = 0; j = cols; j++)
+    for (j = 0; j < cols; j++)
     {
         if (j < 9)
         {
@@ -491,15 +256,132 @@ void printTable(char **tab, int rows, int cols)
         }
         for (j = 0; j < cols; j++)
         {
-            if (table2[i][j] == 'T')
-            {
-                printf("T ");
-            }
-            else
+            if (table[i][j] == '#' || table[i][j] == '$')
             {
                 printf("%c ", table[i][j]);
             }
-            printf("\n");
+            else if (table[i][j] != '.' && table[i][j] != '$')
+            {
+                printf("%d ", table[i][j]);
+            }
+            else
+            {
+                printf(". ");
+            }
         }
+        printf("\n");
+    }
+}
+
+//Fuction for generating moves
+int move(char *m, int rows, int cols)
+{
+    int i, k;
+    for (i = 0; i < rows * cols; i++)
+    {
+        if (m[i] == 'x' || m[i] == 'X')
+        {
+            printf("\n");
+            printf("THANK YOU FOR PLAYING!\n");
+            return 1;
+        }
+
+        //Upward move
+        if (m[i] == 'w' || m[i] == 'W')
+        {
+
+            if (!(knightPos[0] == 0) && !k == 0)
+            {
+
+                if (table[knightPos[0]][knightPos[1]] == '.')
+                {
+                    table[knightPos[0]][knightPos[1]] = '$';
+                }
+                else
+                {
+                    table[knightPos[0]][knightPos[1]] = '.';
+                }
+
+                if (table[knightPos[0] - 1][knightPos[1]] == '#')
+                {
+                    table[knightPos[0]][knightPos[1]] = '$';
+                    return 0;
+                }
+                table[knightPos[0] - 1][knightPos[1]] = '$';
+                knightPos[0]--;
+            }
+        }
+        //Downward move
+        if (m[i] == 's' || m[i] == 'S')
+        {
+
+            if (!(knightPos[0] == rows - 1))
+            {
+                if (table[knightPos[0]][knightPos[1]] == '.')
+                {
+                    table[knightPos[0]][knightPos[1]] = '$';
+                }
+                else
+                {
+                    table[knightPos[0]][knightPos[1]] = '.';
+                }
+                if (table[knightPos[0] + 1][knightPos[1]] == '#')
+                {
+                    table[knightPos[0]][knightPos[1]] = '$';
+                    return 0;
+                }
+                table[knightPos[0] + 1][knightPos[1]] = '$';
+                knightPos[0]++;
+            }
+        }
+
+        //Right move
+        if (m[i] == 'd' || m[i] == 'D')
+        {
+
+            if (!(knightPos[1] == cols - 1))
+            {
+                if (table[knightPos[0]][knightPos[1]] == '.')
+                {
+                    table[knightPos[0]][knightPos[1]] = '$';
+                }
+                else
+                {
+                    table[knightPos[0]][knightPos[1]] = '.';
+                }
+                if (table[knightPos[0]][knightPos[1] + 1] == '#')
+                {
+                    table[knightPos[0]][knightPos[1]] = '$';
+                    return 0;
+                }
+                table[knightPos[0]][knightPos[1] + 1] = '$';
+                knightPos[1]++;
+            }
+        }
+        //Left move
+        if (m[i] == 'a' || m[i] == 'A')
+        {
+
+            if (!(knightPos[1] == 0))
+            {
+
+                if (table[knightPos[0]][knightPos[1]] == '.')
+                {
+                    table[knightPos[0]][knightPos[1]] = '$';
+                }
+                else
+                {
+                    table[knightPos[0]][knightPos[1]] = '.';
+                }
+                if (table[knightPos[0]][knightPos[1] - 1] == '#')
+                {
+                    table[knightPos[0]][knightPos[1]] = '$';
+                    return 0;
+                }
+                table[knightPos[0]][knightPos[1] - 1] = '$';
+                knightPos[1]--;
+            }
+        }
+        return 0;
     }
 }
