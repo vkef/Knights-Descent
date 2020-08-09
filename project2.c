@@ -22,7 +22,7 @@ int main()
     int level;
     srand(time(NULL));
     printf("\n");
-    printf("WELCOME TO KNIGHTS DECENT!\n");
+    printf("WELCOME TO KNIGHTS DESCENT!\n");
     printf("***************************\n");
     printf("PRESS ANY KEY TO CONTINUE...");
 
